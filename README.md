@@ -62,6 +62,8 @@ Login : admin
 
 Mot de passe : G7!tR3$mK9#pLx2@qW5z
 
+⚠️ Sécurité : changez ce mot de passe lors du premier déploiement en production (modifiez VALID_PASSWORD dans agent.py).
+
 Démarrer l’IDS temps réel (sur le serveur)
 bash
 cd ..
