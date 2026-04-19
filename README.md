@@ -4,11 +4,10 @@
 
 ## ✨ Fonctionnalités
 
-- **Détection temps réel** : analyse du trafic réseau avec des règles Scapy (DDoS, PortScan, SSH/FTP brute force, Bot) et possibilité d’intégrer un modèle Random Forest.
+- **Détection temps réel** : analyse du trafic réseau avec des règles Scapy (DDoS, PortScan, SSH/FTP brute force, Bot) et intégration d’un modèle Random Forest.
 - **Modèle ML** : Random Forest entraîné sur le dataset CICIDS2017 avec une **précision de 99,79 %** (fichier `.pkl` fourni).
-- **Tableau de bord web** : interface Flask avec authentification, statistiques en temps réel, historique des alertes (SQLite), recherche multicritères, export PCAP (format Wireshark).
-- **Architecture centralisée** : un serveur central héberge le dashboard, des agents légers peuvent être déployés sur les autres postes pour remonter leurs alertes.
-- **Alertes** : notifications sur le dashboard, emails, et possibilité d’extension vers Telegram/WhatsApp.
+- **Tableau de bord web** : interface Flask avec authentification, statistiques en temps réel, historique des alertes (SQLite), recherche multicritères, export PCAP.
+- **Architecture centralisée** : un serveur central héberge le dashboard, des agents légers peuvent être déployés sur les autres postes.
 - **Sauvegarde automatique des captures** : les fichiers PCAP sont horodatés et stockés localement.
 
 ## 🏗️ Architecture
@@ -18,7 +17,6 @@
 └────────┬────────┘ └────────┬────────┘ └────────┬────────┘
 │ │ │
 └────────────────────────┼────────────────────────┘
-│
 ▼
 ┌─────────────────────────┐
 │ Serveur Central │
@@ -33,63 +31,52 @@ text
 ### Sur le serveur central (Ubuntu / Debian)
 
 ```bash
-# Mise à jour et installation des paquets système
 sudo apt update
 sudo apt install python3 python3-pip tcpdump tshark -y
-
-# Téléchargement du projet
 git clone https://github.com/MeyDabbabi/-IntelliGuard.git
 cd -IntelliGuard
-
-# Installation des dépendances Python (de préférence dans un venv)
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 Sur un poste client (agent local)
 bash
-# Même principe : installer Python, tcpdump, puis le script agent_local.py
-# Modifier la variable SERVER_IP dans agent_local.py pour pointer vers l’IP du serveur central
+# Installer Python, tcpdump, puis copier agent_local.py
+# Modifier SERVER_IP dans agent_local.py
 🧪 Utilisation
 Démarrer le tableau de bord
 bash
 cd ids_agent
-source ../venv/bin/activate   # si vous utilisez un environnement virtuel
+source ../venv/bin/activate
 python3 agent.py
-Le dashboard est alors accessible sur http://<IP_SERVEUR>:5000.
-Identifiants par défaut :
+Accès : http://<IP_SERVEUR>:5000
+Identifiants par défaut : admin / G7!tR3$mK9#pLx2@qW5z
 
-Login : admin
+⚠️ Changez ce mot de passe en production.
 
-Mot de passe : G7!tR3$mK9#pLx2@qW5z
-
-⚠️ Sécurité : changez ce mot de passe lors du premier déploiement en production (modifiez VALID_PASSWORD dans agent.py).
-
-Démarrer l’IDS temps réel (sur le serveur)
+Démarrer l’IDS temps réel
 bash
 cd ..
 sudo venv/bin/python3 ids_realtime.py
-Lancer un agent local (sur un autre PC)
+Lancer un agent local
 bash
 python3 agent_local.py
 📦 Contenu du dépôt
 Fichier / Dossier	Description
-ids_realtime.py	Moteur principal de détection (règles Scapy + modèle ML optionnel)
-ids_agent/	Dossier contenant le dashboard (Flask), les templates, les fichiers statiques et la base de données
-agent_local.py	Script pour les postes distants (capture locale et envoi des alertes)
-analyze_pcap.py	Analyse hors ligne de fichiers PCAP avec le modèle Random Forest
-intrusion_detection_FINAL.pkl	Modèle Random Forest pré‑entraîné
-label_encoder_FINAL.pkl	Encodeur des labels associés
+ids_realtime.py	Moteur principal (règles Scapy + ML optionnel)
+ids_agent/	Dashboard Flask, templates, base de données
+agent_local.py	Agent pour postes distants
+analyze_pcap.py	Analyse hors ligne avec le modèle ML
+intrusion_detection_FINAL.pkl	Modèle Random Forest
+label_encoder_FINAL.pkl	Encodeur des labels
 requirements.txt	Dépendances Python
 LICENSE	Licence MIT
 🛠️ Personnalisation
-Seuils de détection : modifiez les valeurs dans la fonction rule_based_detection() de ids_realtime.py.
+Seuils de détection : modifiez rule_based_detection() dans ids_realtime.py.
 
-Ajout d’un certificat HTTPS : pour la production, placez le dashboard derrière Nginx avec Let’s Encrypt.
-
-Notifications supplémentaires : intégrez un bot Telegram (voir la documentation en ligne).
+HTTPS : placez le dashboard derrière Nginx avec Let’s Encrypt.
 
 📄 Licence
-Ce projet est distribué sous la licence MIT. Voir le fichier LICENSE pour plus de détails.
+Ce projet est distribué sous la licence MIT. 
 
 🙏 Remerciements
 Dataset CICIDS2017 (Canadian Institute for Cybersecurity)
