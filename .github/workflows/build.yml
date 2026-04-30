@@ -15,7 +15,7 @@ jobs:
           pip install pyinstaller scapy requests pandas numpy joblib scikit-learn
       - name: Build EXE
         run: |
-          pyinstaller --onefile --noconsole --name IntelliGuard-Agent ids_realtime.py
+          pyinstaller --onefile --noconsole --name IntelliGuard-Agent ids_windows.py
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
