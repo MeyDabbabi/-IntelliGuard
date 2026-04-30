@@ -1,0 +1,23 @@
+name: Build Windows EXE
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller scapy requests pandas numpy joblib scikit-learn
+      - name: Build EXE
+        run: |
+          pyinstaller --onefile --noconsole --name IntelliGuard-Agent ids_realtime.py
+      - name: Upload EXE
+        uses: actions/upload-artifact@v3
+        with:
+          name: IntelliGuard-Agent
+          path: dist/IntelliGuard-Agent.exe
