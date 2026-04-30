@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - main     # on ajoute les deux pour être sûr
 
 jobs:
   build:
@@ -11,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: master   # on force la bonne branche
 
       - uses: actions/setup-python@v5
         with:
