@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-      - main     # on ajoute les deux pour être sûr
+      - main
 
 jobs:
   build:
@@ -12,20 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master   # on force la bonne branche
-
+          ref: master
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
       - name: Install dependencies
         run: |
           pip install pyinstaller scapy requests pandas numpy joblib scikit-learn
-
       - name: Build EXE
         run: |
-          pyinstaller --onefile --noconsole --name IntelliGuard-Agent ids_windows.py
-
+          pyinstaller --onefile --noconsole --clean --name IntelliGuard-Agent ids_windows.py
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
