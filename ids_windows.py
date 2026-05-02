@@ -37,12 +37,9 @@ THRESHOLDS = {
 # ==================== HEARTBEAT ====================
 def heartbeat():
     try:
-        requests.post(DASHBOARD_URL, json={
-            "type": "BENIGN",
-            "score": 0,
-            "packets": 0,
-            "ips": [MY_IP],
-            "machine": MACHINE_NAME
+        requests.post("http://192.168.1.49:5000/api/register", json={
+            "machine": MACHINE_NAME,
+            "ip": MY_IP
         }, timeout=3)
         logging.info(f"Heartbeat envoyé - Machine: {MACHINE_NAME} IP: {MY_IP}")
     except Exception as e:
