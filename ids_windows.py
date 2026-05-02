@@ -3,7 +3,6 @@ import requests
 import os
 import socket
 import logging
-from datetime import datetime
 from scapy.all import sniff, IP, TCP, UDP, ICMP
 from collections import Counter
 
@@ -11,6 +10,7 @@ from collections import Counter
 DASHBOARD_URL = "http://192.168.1.49:5000/api/alert"
 CAPTURE_DURATION = 30
 MACHINE_NAME = socket.gethostname()
+MY_IP = socket.gethostbyname(socket.gethostname())
 
 # Dossier logs Windows
 LOG_DIR = os.path.join(os.environ.get("APPDATA", "C:\\"), "IntelliGuard", "logs")
@@ -34,6 +34,20 @@ THRESHOLDS = {
     'bot_unusual': 20000
 }
 
+# ==================== HEARTBEAT ====================
+def heartbeat():
+    try:
+        requests.post(DASHBOARD_URL, json={
+            "type": "BENIGN",
+            "score": 0,
+            "packets": 0,
+            "ips": [MY_IP],
+            "machine": MACHINE_NAME
+        }, timeout=3)
+        logging.info(f"Heartbeat envoyé - Machine: {MACHINE_NAME} IP: {MY_IP}")
+    except Exception as e:
+        logging.error(f"Erreur heartbeat: {e}")
+
 # ==================== STATS SCAPY ====================
 stats = {
     "syn": 0, "udp": 0, "icmp": 0,
@@ -48,8 +62,7 @@ def packet_callback(pkt):
     try:
         if IP in pkt:
             src = pkt[IP].src
-            # Ignorer les IPs locales
-            if src.startswith("127.") or src.startswith("192.168.1.49"):
+            if src.startswith("127.") or src == MY_IP:
                 return
             stats["src_counter"][src] += 1
             stats["top_src"] = stats["src_counter"].most_common(1)[0][0]
@@ -124,21 +137,24 @@ def send_alert(atype, score, count, src_ip):
 # ==================== BOUCLE PRINCIPALE ====================
 print("=" * 60)
 print(f"IntelliGuard IDS Agent - Machine: {MACHINE_NAME}")
+print(f"IP: {MY_IP}")
 print(f"Serveur: {DASHBOARD_URL}")
 print("=" * 60)
 
+# Premier heartbeat au démarrage
+heartbeat()
+
 try:
+    cycle = 0
     while True:
         ts = time.strftime("%H:%M:%S")
         print(f"[{ts}] Capture {CAPTURE_DURATION}s...")
         reset_stats()
 
-        # Capture Scapy (utilise Npcap sur Windows)
         sniff(prn=packet_callback, timeout=CAPTURE_DURATION, store=0)
 
-        # Détection par règles
         alerts = rule_based_detection()
-        src_ip = stats["top_src"] if stats["top_src"] else "0.0.0.0"
+        src_ip = stats["top_src"] if stats["top_src"] else MY_IP
 
         if alerts:
             for atype, score, count in alerts:
@@ -146,6 +162,10 @@ try:
                 send_alert(atype, score, count, src_ip)
         else:
             print("  Trafic normal")
+            cycle += 1
+            if cycle % 2 == 0:
+                heartbeat()
+                print("  Heartbeat envoyé au serveur")
             logging.info("Trafic normal")
 
         print("-" * 60)
